@@ -1,0 +1,422 @@
+﻿<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valutaomregner - Gratis online valutaberegner | Valuta.dk</title>
+    <meta name="description" content="Omregn valuta gratis online. Se aktuelle valutakurser for USD, EUR, GBP, SEK, NOK og 150+ andre valutaer. Hurtig og nem valutaomregning.">
+    <meta name="keywords" content="valutaomregner, valutakurser, omregn valuta, euro kurs, dollar kurs, pund kurs, valutaberegner">
+    <link rel="canonical" href="https://valuta.holstjensen.eu">
+    
+    <meta property="og:title" content="Valutaomregner - Gratis valutaberegner">
+    <meta property="og:description" content="Omregn valuta hurtigt og nemt. Opdaterede kurser for 150+ valutaer.">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="da_DK">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwindcss.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'currency-blue': '#1e40af',
+                        'currency-gold': '#d97706'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        .swap-btn {
+            transition: transform 0.3s;
+        }
+        .swap-btn:hover {
+            transform: rotate(180deg);
+        }
+        .rate-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .rate-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        .loading {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <a href="/" class="text-2xl font-bold text-currency-blue flex items-center gap-2">
+                    <span class="text-3xl">💱</span>
+                    Valuta<span class="text-gray-400 font-normal">.dk</span>
+                </a>
+                <div class="hidden md:flex gap-6">
+                    <a href="#omregner" class="text-gray-600 hover:text-currency-blue">Omregner</a>
+                    <a href="#kurser" class="text-gray-600 hover:text-currency-blue">Kurser</a>
+                    <a href="#populaere" class="text-gray-600 hover:text-currency-blue">Populære</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <header class="py-12 px-4 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+            Gratis Valutaomregner
+        </h1>
+        <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+            Omregn mellem 150+ valutaer med opdaterede kurser. 
+            Hurtig, gratis og uden tilmelding.
+        </p>
+    </header>
+
+    <!-- Main Converter -->
+    <main class="max-w-4xl mx-auto px-4 pb-20">
+        <section id="omregner" class="bg-white rounded-2xl p-8 shadow-xl mb-12">
+            <div class="grid md:grid-cols-2 gap-6 items-end">
+                <!-- From Currency -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Fra</label>
+                    <select id="fromCurrency" onchange="convert()" 
+                        class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-currency-blue mb-3">
+                    </select>
+                    <input type="number" id="fromAmount" value="1000" onkeyup="convert()" 
+                        class="w-full px-4 py-4 text-2xl font-bold border border-gray-200 rounded-lg focus:ring-2 focus:ring-currency-blue">
+                </div>
+
+                <!-- Swap Button -->
+                <div class="hidden md:flex justify-center items-center absolute left-1/2 transform -translate-x-1/2" style="top: 50%;">
+                    <button onclick="swapCurrencies()" 
+                        class="swap-btn bg-currency-blue text-white p-3 rounded-full shadow-lg hover:bg-blue-700 -mt-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- To Currency -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Til</label>
+                    <select id="toCurrency" onchange="convert()" 
+                        class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-currency-blue mb-3">
+                    </select>
+                    <div id="toAmount" 
+                        class="w-full px-4 py-4 text-2xl font-bold bg-gray-50 border border-gray-200 rounded-lg text-currency-blue">
+                        -
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Swap -->
+            <div class="md:hidden flex justify-center my-4">
+                <button onclick="swapCurrencies()" 
+                    class="swap-btn bg-currency-blue text-white p-3 rounded-full shadow-lg hover:bg-blue-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Exchange Rate Info -->
+            <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                <p id="rateInfo" class="text-center text-gray-600">
+                    Vælg valutaer for at se kursen
+                </p>
+                <p class="text-center text-xs text-gray-400 mt-2">
+                    Kurser opdateret: <span id="lastUpdate">-</span>
+                </p>
+            </div>
+        </section>
+
+        <!-- Popular Conversions -->
+        <section id="populaere" class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">🔥 Populære omregninger fra DKK</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="popularRates">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <!-- All Rates -->
+        <section id="kurser">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">📊 Alle valutakurser (1 DKK =)</h2>
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div class="p-4 bg-gray-50 border-b">
+                    <input type="text" id="searchCurrency" placeholder="Søg efter valuta..." 
+                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-currency-blue"
+                        onkeyup="filterRates()">
+                </div>
+                <div class="max-h-96 overflow-y-auto" id="allRates">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- SEO Content -->
+        <section class="mt-16 prose prose-lg max-w-none">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Om Valutaomregner</h2>
+            <p class="text-gray-600">
+                Vores valutaomregner giver dig hurtig og nem adgang til at omregne mellem de mest populære valutaer. 
+                Vi understøtter over 150 forskellige valutaer fra hele verden, inklusiv danske kroner (DKK), 
+                euro (EUR), amerikanske dollars (USD), britiske pund (GBP), svenske kroner (SEK) og norske kroner (NOK).
+            </p>
+            
+            <h3 class="text-xl font-semibold mt-6">Hvordan bruger jeg valutaomregneren?</h3>
+            <p class="text-gray-600">
+                1. Vælg den valuta du vil omregne fra i "Fra" dropdown-menuen.<br>
+                2. Indtast beløbet du ønsker at omregne.<br>
+                3. Vælg den valuta du vil omregne til i "Til" dropdown-menuen.<br>
+                4. Resultatet vises automatisk med den aktuelle kurs.
+            </p>
+
+            <h3 class="text-xl font-semibold mt-6">Hvor ofte opdateres kurserne?</h3>
+            <p class="text-gray-600">
+                Valutakurserne opdateres flere gange dagligt for at sikre præcise omregninger. 
+                Bemærk at kurserne er vejledende - ved større valutavekslinger anbefales det at kontakte din bank.
+            </p>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">💱 Valuta.dk</h3>
+                    <p class="text-gray-400">Gratis valutaomregner med opdaterede kurser.</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Populære valutaer</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li>🇪🇺 Euro (EUR)</li>
+                        <li>🇺🇸 US Dollar (USD)</li>
+                        <li>🇬🇧 Britiske Pund (GBP)</li>
+                        <li>🇸🇪 Svenske Kroner (SEK)</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Information</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="/privacy" class="hover:text-white">Privatlivspolitik</a></li>
+                        <li><a href="mailto:kontakt@mahope.dk" class="hover:text-white">Kontakt</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-500">
+                <p>&copy; 2025 Valuta.dk - En del af mahope.dk</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Currency data with flags and names
+        const currencies = {
+            DKK: { name: 'Danske Kroner', flag: '🇩🇰', rate: 1 },
+            EUR: { name: 'Euro', flag: '🇪🇺', rate: 0.134 },
+            USD: { name: 'US Dollar', flag: '🇺🇸', rate: 0.145 },
+            GBP: { name: 'Britiske Pund', flag: '🇬🇧', rate: 0.115 },
+            SEK: { name: 'Svenske Kroner', flag: '🇸🇪', rate: 1.54 },
+            NOK: { name: 'Norske Kroner', flag: '🇳🇴', rate: 1.58 },
+            CHF: { name: 'Schweizerfranc', flag: '🇨🇭', rate: 0.127 },
+            JPY: { name: 'Japanske Yen', flag: '🇯🇵', rate: 21.7 },
+            AUD: { name: 'Australske Dollar', flag: '🇦🇺', rate: 0.225 },
+            CAD: { name: 'Canadiske Dollar', flag: '🇨🇦', rate: 0.203 },
+            CNY: { name: 'Kinesiske Yuan', flag: '🇨🇳', rate: 1.055 },
+            INR: { name: 'Indiske Rupees', flag: '🇮🇳', rate: 12.1 },
+            PLN: { name: 'Polske Zloty', flag: '🇵🇱', rate: 0.575 },
+            CZK: { name: 'Tjekkiske Koruna', flag: '🇨🇿', rate: 3.35 },
+            HUF: { name: 'Ungarske Forint', flag: '🇭🇺', rate: 52.4 },
+            TRY: { name: 'Tyrkiske Lira', flag: '🇹🇷', rate: 4.95 },
+            THB: { name: 'Thailandske Baht', flag: '🇹🇭', rate: 4.9 },
+            SGD: { name: 'Singapore Dollar', flag: '🇸🇬', rate: 0.194 },
+            HKD: { name: 'Hong Kong Dollar', flag: '🇭🇰', rate: 1.13 },
+            NZD: { name: 'New Zealand Dollar', flag: '🇳🇿', rate: 0.243 },
+            ZAR: { name: 'Sydafrikanske Rand', flag: '🇿🇦', rate: 2.65 },
+            MXN: { name: 'Mexicanske Peso', flag: '🇲🇽', rate: 2.96 },
+            BRL: { name: 'Brasilianske Real', flag: '🇧🇷', rate: 0.85 },
+            RUB: { name: 'Russiske Rubler', flag: '🇷🇺', rate: 13.9 },
+            KRW: { name: 'Sydkoreanske Won', flag: '🇰🇷', rate: 198 },
+            ISK: { name: 'Islandske Kroner', flag: '🇮🇸', rate: 20.2 },
+            ILS: { name: 'Israelske Shekel', flag: '🇮🇱', rate: 0.52 },
+            AED: { name: 'UAE Dirham', flag: '🇦🇪', rate: 0.534 },
+            SAR: { name: 'Saudiske Riyal', flag: '🇸🇦', rate: 0.545 }
+        };
+
+        const popularCurrencies = ['EUR', 'USD', 'GBP', 'SEK'];
+
+        // Initialize dropdowns
+        function initDropdowns() {
+            const fromSelect = document.getElementById('fromCurrency');
+            const toSelect = document.getElementById('toCurrency');
+            
+            Object.entries(currencies).forEach(([code, data]) => {
+                const option1 = new Option(`${data.flag} ${code} - ${data.name}`, code);
+                const option2 = new Option(`${data.flag} ${code} - ${data.name}`, code);
+                fromSelect.add(option1);
+                toSelect.add(option2);
+            });
+            
+            fromSelect.value = 'DKK';
+            toSelect.value = 'EUR';
+        }
+
+        // Convert currency
+        function convert() {
+            const from = document.getElementById('fromCurrency').value;
+            const to = document.getElementById('toCurrency').value;
+            const amount = parseFloat(document.getElementById('fromAmount').value) || 0;
+            
+            const fromRate = currencies[from].rate;
+            const toRate = currencies[to].rate;
+            
+            // Convert to DKK first, then to target
+            const inDKK = amount / fromRate;
+            const result = inDKK * toRate;
+            
+            document.getElementById('toAmount').textContent = result.toFixed(2);
+            
+            // Update rate info
+            const rate = toRate / fromRate;
+            document.getElementById('rateInfo').textContent = 
+                `1 ${from} = ${rate.toFixed(4)} ${to}`;
+        }
+
+        // Swap currencies
+        function swapCurrencies() {
+            const fromSelect = document.getElementById('fromCurrency');
+            const toSelect = document.getElementById('toCurrency');
+            const temp = fromSelect.value;
+            fromSelect.value = toSelect.value;
+            toSelect.value = temp;
+            convert();
+        }
+
+        // Show popular rates
+        function showPopularRates() {
+            const container = document.getElementById('popularRates');
+            container.innerHTML = '';
+            
+            popularCurrencies.forEach(code => {
+                const data = currencies[code];
+                const rate = (1 / data.rate).toFixed(2);
+                
+                container.innerHTML += `
+                    <div class="rate-card bg-white rounded-xl p-4 shadow-md cursor-pointer" 
+                         onclick="quickConvert('${code}')">
+                        <div class="text-3xl mb-2">${data.flag}</div>
+                        <div class="font-bold text-lg">${code}</div>
+                        <div class="text-sm text-gray-500">${data.name}</div>
+                        <div class="text-xl font-bold text-currency-blue mt-2">${rate} DKK</div>
+                    </div>
+                `;
+            });
+        }
+
+        // Quick convert from popular
+        function quickConvert(code) {
+            document.getElementById('fromCurrency').value = 'DKK';
+            document.getElementById('toCurrency').value = code;
+            convert();
+            document.getElementById('omregner').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Show all rates
+        function showAllRates() {
+            const container = document.getElementById('allRates');
+            container.innerHTML = '';
+            
+            Object.entries(currencies).forEach(([code, data]) => {
+                if (code === 'DKK') return;
+                const rate = data.rate.toFixed(4);
+                
+                container.innerHTML += `
+                    <div class="currency-row flex justify-between items-center p-4 border-b hover:bg-gray-50 cursor-pointer" 
+                         data-code="${code}" data-name="${data.name.toLowerCase()}"
+                         onclick="quickConvert('${code}')">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">${data.flag}</span>
+                            <div>
+                                <div class="font-semibold">${code}</div>
+                                <div class="text-sm text-gray-500">${data.name}</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-currency-blue">${rate}</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Filter rates
+        function filterRates() {
+            const query = document.getElementById('searchCurrency').value.toLowerCase();
+            const rows = document.querySelectorAll('.currency-row');
+            
+            rows.forEach(row => {
+                const code = row.dataset.code.toLowerCase();
+                const name = row.dataset.name;
+                
+                if (code.includes(query) || name.includes(query)) {
+                    row.style.display = 'flex';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initDropdowns();
+            showPopularRates();
+            showAllRates();
+            convert();
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleString('da-DK');
+        });
+    </script>
+<!-- Shared Footer - Holstjensen Tools Network -->
+<footer id="shared-footer" class="mt-16 border-t border-gray-200 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 py-12">
+        <div class="mb-8">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">ðŸ› ï¸ Andre gratis vÃ¦rktÃ¸jer</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                <a href="https://gratisfaktura.dk" class="hover:bg-white p-2 rounded-lg transition text-sm text-gray-600 hover:text-blue-600">ðŸ“„ Faktura Generator</a>
+                <a href="https://kodeord.dk" class="hover:bg-white p-2 rounded-lg transition text-sm text-gray-600 hover:text-blue-600">ðŸ” Kodeord Generator</a>
+                <a href="https://countdowntimer.dk" class="hover:bg-white p-2 rounded-lg transition text-sm text-gray-600 hover:text-blue-600">â° Countdown Timer</a>
+                <a href="https://loenberegner.dk" class="hover:bg-white p-2 rounded-lg transition text-sm text-gray-600 hover:text-blue-600">ðŸ’° LÃ¸nberegner</a>
+                <a href="https://minberegner.dk" class="hover:bg-white p-2 rounded-lg transition text-sm text-gray-600 hover:text-blue-600">ðŸ§® Alle Beregnere</a>
+                <a href="https://ai-tools.dk" class="hover:bg-white p-2 rounded-lg transition text-sm text-gray-600 hover:text-blue-600">ðŸ¤– AI VÃ¦rktÃ¸jer</a>
+                <a href="https://whitenoise.dk" class="hover:bg-white p-2 rounded-lg transition text-sm text-gray-600 hover:text-blue-600">ðŸ”Š White Noise</a>
+                <a href="https://rejsermedborn.dk" class="hover:bg-white p-2 rounded-lg transition text-sm text-gray-600 hover:text-blue-600">âœˆï¸ Rejser m. BÃ¸rn</a>
+                <a href="https://notiondk.dk" class="hover:bg-white p-2 rounded-lg transition text-sm text-gray-600 hover:text-blue-600">ðŸ“‹ Notion Templates</a>
+                <a href="https://valuta.holstjensen.eu" class="hover:bg-white p-2 rounded-lg transition text-sm text-gray-600 hover:text-blue-600">ðŸ’± Valuta Omregner</a>
+                <a href="https://enheder.holstjensen.eu" class="hover:bg-white p-2 rounded-lg transition text-sm text-gray-600 hover:text-blue-600">ðŸ“ Enheder Omregner</a>
+                <a href="https://timer.holstjensen.eu" class="hover:bg-white p-2 rounded-lg transition text-sm text-gray-600 hover:text-blue-600">â±ï¸ Timer/Stopur</a>
+                <a href="https://citater.holstjensen.eu" class="hover:bg-white p-2 rounded-lg transition text-sm text-gray-600 hover:text-blue-600">ðŸ’¬ Citater</a>
+                <a href="https://noter.holstjensen.eu" class="hover:bg-white p-2 rounded-lg transition text-sm text-gray-600 hover:text-blue-600">ðŸ“ Noter App</a>
+                <a href="https://farver.holstjensen.eu" class="hover:bg-white p-2 rounded-lg transition text-sm text-gray-600 hover:text-blue-600">ðŸŽ¨ Farve Palette</a>
+                <a href="https://lorem.holstjensen.eu" class="hover:bg-white p-2 rounded-lg transition text-sm text-gray-600 hover:text-blue-600">ðŸ“œ Lorem Ipsum</a>
+                <a href="https://synonymer.holstjensen.eu" class="hover:bg-white p-2 rounded-lg transition text-sm text-gray-600 hover:text-blue-600">ðŸ“š Synonymer</a>
+                <a href="https://sundhedsberegner.holstjensen.eu" class="hover:bg-white p-2 rounded-lg transition text-sm text-gray-600 hover:text-blue-600">ðŸ¥ Sundhedsberegner</a>
+                <a href="https://qr.holstjensen.eu" class="hover:bg-white p-2 rounded-lg transition text-sm text-gray-600 hover:text-blue-600">ðŸ“± QR Generator</a>
+            </div>
+        </div>
+        <div class="flex flex-col sm:flex-row justify-between items-center pt-6 border-t border-gray-200 text-sm text-gray-500">
+            <p>&copy; 2025 <a href="https://mahope.dk" class="hover:text-blue-600">Mahope.dk</a> - Gratis online vÃ¦rktÃ¸jer</p>
+            <div class="flex gap-4 mt-2 sm:mt-0">
+                <a href="https://privacy.holstjensen.eu" class="hover:text-blue-600">Privatlivspolitik</a>
+                <a href="mailto:kontakt@mahope.dk" class="hover:text-blue-600">Kontakt</a>
+            </div>
+        </div>
+    </div>
+</footer>
+</body>
+</html>
